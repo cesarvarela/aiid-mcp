@@ -1,0 +1,25 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'node', args: ['dist/index.js'], env: {
+        ...(config.aiidGraphqlEndpoint ? { AIID_GRAPHQL_ENDPOINT: config.aiidGraphqlEndpoint } : {}),
+        ...(config.aiidApiToken ? { AIID_API_TOKEN: config.aiidApiToken } : {})
+      } })
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    properties:
+      aiidGraphqlEndpoint:
+        type: string
+        default: https://incidentdatabase.ai/api/graphql
+        description: GraphQL endpoint URL for the AI Incident Database.
+      aiidApiToken:
+        type: string
+        description: Optional Bearer token for authenticating to the GraphQL API.
+  exampleConfig:
+    aiidGraphqlEndpoint: https://incidentdatabase.ai/api/graphql
+    aiidApiToken: YOUR_API_TOKEN
