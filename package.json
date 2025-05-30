@@ -11,7 +11,8 @@
     "build": "tsc",
     "start": "npx tsx index.ts",
     "test": "vitest run",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "prepare": "npm run build"
   },
   "author": "",
   "license": "ISC",

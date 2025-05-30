@@ -97,7 +97,6 @@ const paginationSchema = z.object({
   skip: z.number().int().nonnegative().optional(),
 }).optional();
 
-// Example: Get Incidents
 const getIncidentsShape: ZodRawShape = {
   // Define filter fields based on IncidentFilterType from graphql.ts
   // Example: filter on incident_id
@@ -113,12 +112,15 @@ const getIncidentsShape: ZodRawShape = {
     // Add other sortable fields...
   }).optional(),
   // Define which fields to return (optional, defaults to a basic set)
-  fields: z.array(z.string()).optional().default(["incident_id", "title", "date", "description"])
+  fields: z.array(z.string()).optional().default(["incident_id", "title", "date", "description"]),
+  format: z.enum(["json", "csv"]).optional().default("json")
 };
+
 // Create the Zod schema from the shape for type inference
 const getIncidentsSchema = z.object(getIncidentsShape);
 
 async function getIncidents(params: z.infer<typeof getIncidentsSchema>): McpToolResponse {
+  const { format } = params;
   try {
     // Construct the GraphQL query string dynamically based on requested fields
     const fieldSelection = params.fields.join('\n          ');
@@ -135,12 +137,20 @@ async function getIncidents(params: z.infer<typeof getIncidentsSchema>): McpTool
       pagination: params.pagination,
       sort: params.sort,
     };
-
-    // Remove undefined variables to avoid sending nulls for optional args
     Object.keys(variables).forEach(key => variables[key as keyof typeof variables] === undefined && delete variables[key as keyof typeof variables]);
 
-
     const result = await graphqlRequest<{ incidents: graphql.Incident[] }>({ query, variables });
+    if (format === "csv") {
+      const headers = params.fields;
+      const rows = result.incidents;
+      const csv = [
+        headers.join(","),
+        ...rows.map(item =>
+          headers.map((h: string) => `"${String((item as any)[h] ?? "").replace(/"/g, '""')}"`).join(",")
+        )
+      ].join("\n");
+      return { content: [{ type: "text", text: csv }] };
+    }
     return createMcpSuccessResponse(result.incidents);
   } catch (err) {
     return createMcpErrorResponse("fetching incidents", err);
@@ -151,19 +161,36 @@ async function getIncidents(params: z.infer<typeof getIncidentsSchema>): McpTool
 const getReportsShape: ZodRawShape = {
   filter: z.object({
     report_number: z.object({ EQ: z.number().int() }).optional(),
-    // Add other filterable fields...
+    title: z.object({ EQ: z.string() }).optional(),
+    url: z.object({ EQ: z.string() }).optional(),
+    source_domain: z.object({ EQ: z.string() }).optional(),
+    authors: z.object({ EQ: z.string() }).optional(),
+    date_published: z.object({ EQ: z.string() }).optional(),
+    date_downloaded: z.object({ EQ: z.string() }).optional(),
+    date_modified: z.object({ EQ: z.string() }).optional(),
+    date_submitted: z.object({ EQ: z.string() }).optional(),
+    // Add other filterable fields here...
   }).optional(),
   pagination: paginationSchema,
   sort: z.object({
     report_number: z.enum(["ASC", "DESC"]).optional(),
+    title: z.enum(["ASC", "DESC"]).optional(),
+    url: z.enum(["ASC", "DESC"]).optional(),
+    source_domain: z.enum(["ASC", "DESC"]).optional(),
     date_published: z.enum(["ASC", "DESC"]).optional(),
-    // Add other sortable fields...
+    date_downloaded: z.enum(["ASC", "DESC"]).optional(),
+    date_modified: z.enum(["ASC", "DESC"]).optional(),
+    date_submitted: z.enum(["ASC", "DESC"]).optional(),
+    // Add other sortable fields here...
   }).optional(),
-  fields: z.array(z.string()).optional().default(["report_number", "title", "url", "source_domain", "date_published"])
+  fields: z.array(z.string()).optional().default(["report_number", "title", "url", "source_domain", "date_published"]),
+  format: z.enum(["json", "csv"]).optional().default("json")
 };
 const getReportsSchema = z.object(getReportsShape);
 
+
 async function getReports(params: z.infer<typeof getReportsSchema>): McpToolResponse {
+  const { format } = params;
   try {
     const fieldSelection = params.fields.join('\n          ');
     const query = `
@@ -179,10 +206,20 @@ async function getReports(params: z.infer<typeof getReportsSchema>): McpToolResp
       pagination: params.pagination,
       sort: params.sort,
     };
-
     Object.keys(variables).forEach(key => variables[key as keyof typeof variables] === undefined && delete variables[key as keyof typeof variables]);
 
     const result = await graphqlRequest<{ reports: graphql.Report[] }>({ query, variables });
+    if (format === "csv") {
+      const headers = params.fields;
+      const rows = result.reports;
+      const csv = [
+        headers.join(","),
+        ...rows.map(item =>
+          headers.map((h: string) => `"${String((item as any)[h] ?? "").replace(/"/g, '""')}"`).join(",")
+        )
+      ].join("\n");
+      return { content: [{ type: "text", text: csv }] };
+    }
     return createMcpSuccessResponse(result.reports);
   } catch (err) {
     return createMcpErrorResponse("fetching reports", err);
@@ -199,12 +236,14 @@ const server = new McpServer({
 
 server.tool(
   "get-incidents",
+  "Fetch incidents from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific incident fields.",
   getIncidentsShape,
   getIncidents
 );
 
 server.tool(
   "get-reports",
+  "Fetch reports from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific report fields.",
   getReportsShape,
   getReports
 );
@@ -231,4 +270,4 @@ process.on('uncaughtException', (error) => {
   console.error('Uncaught Exception:', error);
   debug("Uncaught Exception: %o", error);
   process.exit(1);
-}); 
+});
