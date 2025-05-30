@@ -226,12 +226,58 @@ async function getReports(params: z.infer<typeof getReportsSchema>): McpToolResp
   }
 }
 
+const getSchemaShape: ZodRawShape = {};
+
+async function getSchema(): McpToolResponse {
+  try {
+    const query = `
+      {
+        __schema {
+          queryType { name }
+          mutationType { name }
+          subscriptionType { name }
+          types {
+            kind
+            name
+            description
+            fields {
+              name
+              description
+              args {
+                name
+                description
+                type { kind name }
+                defaultValue
+              }
+              type { kind name }
+            }
+            inputFields { name description type { kind name } defaultValue }
+            interfaces { name }
+            enumValues { name description }
+            possibleTypes { name }
+          }
+          directives {
+            name
+            description
+            locations
+            args { name description type { kind name } defaultValue }
+          }
+        }
+      }
+    `;
+    
+    const result = await graphqlRequest<{ __schema: any }>({ query });
+    return createMcpSuccessResponse(result);
+  } catch (err) {
+    return createMcpErrorResponse("fetching schema", err);
+  }
+}
 
 const server = new McpServer({
   name: "AIID GraphQL MCP Server",
   version: "1.0.0",
   description: "Expose AI Incident Database GraphQL API via MCP",
-  debug: true, // Enable debug logging within the MCP server itself
+  debug: true,
 });
 
 server.tool(
@@ -246,6 +292,13 @@ server.tool(
   "Fetch reports from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific report fields.",
   getReportsShape,
   getReports
+);
+
+server.tool(
+  "get-schema",
+  "Fetch the GraphQL schema from the AIID GraphQL API in JSON format.",
+  getSchemaShape,
+  getSchema
 );
 
 async function main() {

@@ -71,14 +71,6 @@ const paginationSchema = z.object({
     limit: z.number().int().positive().optional(),
     skip: z.number().int().nonnegative().optional(),
 }).optional();
-/**
- * Shape schema for the 'get-incidents' tool.
- * Defines the allowed input parameters for fetching incidents:
- *   - filter?: Filter conditions based on incident fields (e.g., incident_id EQ).
- *   - pagination?: Controls result limit and offset.
- *   - sort?: Ordering of results by specified fields.
- *   - fields?: List of incident fields to include in the response.
- */
 const getIncidentsShape = {
     // Define filter fields based on IncidentFilterType from graphql.ts
     // Example: filter on incident_id
@@ -99,11 +91,6 @@ const getIncidentsShape = {
 };
 // Create the Zod schema from the shape for type inference
 const getIncidentsSchema = z.object(getIncidentsShape);
-/**
- * Executes the 'get-incidents' tool.
- * Sends a GraphQL query to the AI Incident Database to retrieve incidents based on parameters.
- * Returns an MCP response containing the list of incidents or an error response.
- */
 async function getIncidents(params) {
     const { format } = params;
     try {
@@ -138,14 +125,6 @@ async function getIncidents(params) {
         return createMcpErrorResponse("fetching incidents", err);
     }
 }
-/**
- * Shape schema for the 'get-reports' tool.
- * Defines the allowed input parameters for fetching reports:
- *   - filter?: Filter conditions based on report fields (e.g., report_number EQ).
- *   - pagination?: Controls result limit and offset.
- *   - sort?: Ordering of results by specified fields.
- *   - fields?: List of report fields to include in the response.
- */
 const getReportsShape = {
     filter: z.object({
         report_number: z.object({ EQ: z.number().int() }).optional(),
@@ -175,11 +154,6 @@ const getReportsShape = {
     format: z.enum(["json", "csv"]).optional().default("json")
 };
 const getReportsSchema = z.object(getReportsShape);
-/**
- * Executes the 'get-reports' tool.
- * Sends a GraphQL query to the AI Incident Database to retrieve reports based on parameters.
- * Returns an MCP response containing the list of reports or an error response.
- */
 async function getReports(params) {
     const { format } = params;
     try {
@@ -213,6 +187,54 @@ async function getReports(params) {
         return createMcpErrorResponse("fetching reports", err);
     }
 }
+// Schema definition for getSchema tool
+const getSchemaShape = {};
+const getSchemaSchema = z.object(getSchemaShape);
+async function getSchema() {
+    try {
+        // Use an introspection query to fetch the schema in JSON format
+        const query = `
+      {
+        __schema {
+          queryType { name }
+          mutationType { name }
+          subscriptionType { name }
+          types {
+            kind
+            name
+            description
+            fields {
+              name
+              description
+              args {
+                name
+                description
+                type { kind name }
+                defaultValue
+              }
+              type { kind name }
+            }
+            inputFields { name description type { kind name } defaultValue }
+            interfaces { name }
+            enumValues { name description }
+            possibleTypes { name }
+          }
+          directives {
+            name
+            description
+            locations
+            args { name description type { kind name } defaultValue }
+          }
+        }
+      }
+    `;
+        const result = await graphqlRequest({ query });
+        return createMcpSuccessResponse(result);
+    }
+    catch (err) {
+        return createMcpErrorResponse("fetching schema", err);
+    }
+}
 const server = new McpServer({
     name: "AIID GraphQL MCP Server",
     version: "1.0.0",
@@ -221,6 +243,7 @@ const server = new McpServer({
 });
 server.tool("get-incidents", "Fetch incidents from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific incident fields.", getIncidentsShape, getIncidents);
 server.tool("get-reports", "Fetch reports from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific report fields.", getReportsShape, getReports);
+server.tool("get-schema", "Fetch the GraphQL schema from the AIID GraphQL API in JSON format.", getSchemaShape, getSchema);
 async function main() {
     const transport = new StdioServerTransport();
     try {
