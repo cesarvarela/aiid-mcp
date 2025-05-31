@@ -4,7 +4,7 @@ import {
   McpToolResponse,
   createMcpSuccessResponse,
   createMcpErrorResponse
-} from "./utils.js";
+} from "./utils";
 
 export const getSchemaShape: ZodRawShape = {};
 

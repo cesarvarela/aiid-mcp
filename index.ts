@@ -1,12 +1,12 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import dotenv from "dotenv";
-import { debug } from "./tools/utils";
+import {debug,} from "./tools/utils";
 import { getIncidents, getIncidentsShape } from "./tools/getIncidents";
 import { getReports, getReportsShape } from "./tools/getReports";
 import { getClassifications, getClassificationsShape } from "./tools/getClassifications";
-import { getTaxonomies, getTaxonomiesShape } from "./tools/getTaxonomies.js";
-import { getSchema, getSchemaShape } from "./tools/getSchema.js";
+import { getTaxonomies, getTaxonomiesShape } from "./tools/getTaxonomies";
+import { getSchema, getSchemaShape } from "./tools/getSchema";
 
 dotenv.config();
 
@@ -34,7 +34,7 @@ server.tool(
 server.tool(
   "get-classifications",
   "Fetch classifications from the AIID GraphQL API. Supports filtering, pagination, sorting, and selecting specific classification fields.",
-  getClassificationsShape, getClassifications
+  getClassificationsShape,  getClassifications
 );
 
 server.tool(

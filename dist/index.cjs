@@ -1,17 +1,40 @@
 #!/usr/bin/env node
+"use strict";
+var __create = Object.create;
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 
 // index.ts
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import dotenv2 from "dotenv";
+var import_mcp = require("@modelcontextprotocol/sdk/server/mcp.js");
+var import_stdio = require("@modelcontextprotocol/sdk/server/stdio.js");
+var import_dotenv2 = __toESM(require("dotenv"), 1);
 
 // tools/utils.ts
-import dotenv from "dotenv";
-import { z } from "zod";
-import fetch from "node-fetch";
-import Debug from "debug";
-dotenv.config();
-var debug = Debug("aiid-mcp");
+var import_dotenv = __toESM(require("dotenv"), 1);
+var import_zod = require("zod");
+var import_node_fetch = __toESM(require("node-fetch"), 1);
+var import_debug = __toESM(require("debug"), 1);
+import_dotenv.default.config();
+var debug = (0, import_debug.default)("aiid-mcp");
 async function graphqlRequest({ query, variables = {} }) {
   const endpoint = process.env.AIID_GRAPHQL_ENDPOINT || "https://incidentdatabase.ai/api/graphql";
   const headers = {
@@ -19,7 +42,7 @@ async function graphqlRequest({ query, variables = {} }) {
   };
   let response;
   try {
-    response = await fetch(endpoint, {
+    response = await (0, import_node_fetch.default)(endpoint, {
       method: "POST",
       headers,
       body: JSON.stringify({ query, variables })
@@ -65,28 +88,28 @@ function createMcpErrorResponse(message, err) {
     isError: true
   };
 }
-var paginationSchema = z.object({
-  limit: z.number().int().positive().optional(),
-  skip: z.number().int().nonnegative().optional()
+var paginationSchema = import_zod.z.object({
+  limit: import_zod.z.number().int().positive().optional(),
+  skip: import_zod.z.number().int().nonnegative().optional()
 }).optional();
 
 // tools/getIncidents.ts
-import { z as z2 } from "zod";
+var import_zod2 = require("zod");
 var getIncidentsShape = {
-  filter: z2.object({
-    incident_id: z2.object({ EQ: z2.number().int() }).optional()
+  filter: import_zod2.z.object({
+    incident_id: import_zod2.z.object({ EQ: import_zod2.z.number().int() }).optional()
     // Add other filterable fields here...
   }).optional(),
   pagination: paginationSchema,
-  sort: z2.object({
-    incident_id: z2.enum(["ASC", "DESC"]).optional(),
-    date: z2.enum(["ASC", "DESC"]).optional()
+  sort: import_zod2.z.object({
+    incident_id: import_zod2.z.enum(["ASC", "DESC"]).optional(),
+    date: import_zod2.z.enum(["ASC", "DESC"]).optional()
     // Add other sortable fields...
   }).optional(),
-  fields: z2.array(z2.string()).optional().default(["incident_id", "title", "date", "description"]),
-  format: z2.enum(["json", "csv"]).optional().default("json")
+  fields: import_zod2.z.array(import_zod2.z.string()).optional().default(["incident_id", "title", "date", "description"]),
+  format: import_zod2.z.enum(["json", "csv"]).optional().default("json")
 };
-var getIncidentsSchema = z2.object(getIncidentsShape);
+var getIncidentsSchema = import_zod2.z.object(getIncidentsShape);
 async function getIncidents(params) {
   const { format } = params;
   try {
@@ -123,36 +146,36 @@ async function getIncidents(params) {
 }
 
 // tools/getReports.ts
-import { z as z3 } from "zod";
+var import_zod3 = require("zod");
 var getReportsShape = {
-  filter: z3.object({
-    report_number: z3.object({ EQ: z3.number().int() }).optional(),
-    title: z3.object({ EQ: z3.string() }).optional(),
-    url: z3.object({ EQ: z3.string() }).optional(),
-    source_domain: z3.object({ EQ: z3.string() }).optional(),
-    authors: z3.object({ EQ: z3.string() }).optional(),
-    date_published: z3.object({ EQ: z3.string() }).optional(),
-    date_downloaded: z3.object({ EQ: z3.string() }).optional(),
-    date_modified: z3.object({ EQ: z3.string() }).optional(),
-    date_submitted: z3.object({ EQ: z3.string() }).optional()
+  filter: import_zod3.z.object({
+    report_number: import_zod3.z.object({ EQ: import_zod3.z.number().int() }).optional(),
+    title: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    url: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    source_domain: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    authors: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    date_published: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    date_downloaded: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    date_modified: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional(),
+    date_submitted: import_zod3.z.object({ EQ: import_zod3.z.string() }).optional()
     // Add other filterable fields here...
   }).optional(),
   pagination: paginationSchema,
-  sort: z3.object({
-    report_number: z3.enum(["ASC", "DESC"]).optional(),
-    title: z3.enum(["ASC", "DESC"]).optional(),
-    url: z3.enum(["ASC", "DESC"]).optional(),
-    source_domain: z3.enum(["ASC", "DESC"]).optional(),
-    date_published: z3.enum(["ASC", "DESC"]).optional(),
-    date_downloaded: z3.enum(["ASC", "DESC"]).optional(),
-    date_modified: z3.enum(["ASC", "DESC"]).optional(),
-    date_submitted: z3.enum(["ASC", "DESC"]).optional()
+  sort: import_zod3.z.object({
+    report_number: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    title: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    url: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    source_domain: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    date_published: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    date_downloaded: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    date_modified: import_zod3.z.enum(["ASC", "DESC"]).optional(),
+    date_submitted: import_zod3.z.enum(["ASC", "DESC"]).optional()
     // Add other sortable fields here...
   }).optional(),
-  fields: z3.array(z3.string()).optional().default(["report_number", "title", "url", "source_domain", "date_published"]),
-  format: z3.enum(["json", "csv"]).optional().default("json")
+  fields: import_zod3.z.array(import_zod3.z.string()).optional().default(["report_number", "title", "url", "source_domain", "date_published"]),
+  format: import_zod3.z.enum(["json", "csv"]).optional().default("json")
 };
-var getReportsSchema = z3.object(getReportsShape);
+var getReportsSchema = import_zod3.z.object(getReportsShape);
 async function getReports(params) {
   const { format } = params;
   try {
@@ -189,32 +212,32 @@ async function getReports(params) {
 }
 
 // tools/getClassifications.ts
-import { z as z4 } from "zod";
+var import_zod4 = require("zod");
 var getClassificationsShape = {
-  filter: z4.object({
-    _id: z4.object({ EQ: z4.string() }).optional(),
+  filter: import_zod4.z.object({
+    _id: import_zod4.z.object({ EQ: import_zod4.z.string() }).optional(),
     // Changed from id, assuming ObjectId is treated as string for EQ filter
-    namespace: z4.object({ EQ: z4.string() }).optional(),
+    namespace: import_zod4.z.object({ EQ: import_zod4.z.string() }).optional(),
     // Changed from name
-    notes: z4.object({ EQ: z4.string() }).optional(),
-    publish: z4.object({ EQ: z4.boolean() }).optional()
+    notes: import_zod4.z.object({ EQ: import_zod4.z.string() }).optional(),
+    publish: import_zod4.z.object({ EQ: import_zod4.z.boolean() }).optional()
     // incidents and reports are likely relational and might not be directly filterable with simple EQ.
     // attributes is an array of objects, filtering might be complex and require specific handling if needed.
   }).optional(),
   pagination: paginationSchema,
-  sort: z4.object({
-    _id: z4.enum(["ASC", "DESC"]).optional(),
+  sort: import_zod4.z.object({
+    _id: import_zod4.z.enum(["ASC", "DESC"]).optional(),
     // Changed from id
-    namespace: z4.enum(["ASC", "DESC"]).optional(),
+    namespace: import_zod4.z.enum(["ASC", "DESC"]).optional(),
     // Changed from name
-    notes: z4.enum(["ASC", "DESC"]).optional(),
-    publish: z4.enum(["ASC", "DESC"]).optional()
+    notes: import_zod4.z.enum(["ASC", "DESC"]).optional(),
+    publish: import_zod4.z.enum(["ASC", "DESC"]).optional()
   }).optional(),
-  fields: z4.array(z4.string()).optional().default(["_id", "namespace", "notes", "publish"]),
+  fields: import_zod4.z.array(import_zod4.z.string()).optional().default(["_id", "namespace", "notes", "publish"]),
   // Updated default fields
-  format: z4.enum(["json", "csv"]).optional().default("json")
+  format: import_zod4.z.enum(["json", "csv"]).optional().default("json")
 };
-var getClassificationsSchema = z4.object(getClassificationsShape);
+var getClassificationsSchema = import_zod4.z.object(getClassificationsShape);
 async function getClassifications(params) {
   const { format } = params;
   try {
@@ -251,32 +274,32 @@ async function getClassifications(params) {
 }
 
 // tools/getTaxonomies.ts
-import { z as z5 } from "zod";
+var import_zod5 = require("zod");
 var getTaxonomiesShape = {
-  filter: z5.object({
-    _id: z5.object({ EQ: z5.string() }).optional(),
+  filter: import_zod5.z.object({
+    _id: import_zod5.z.object({ EQ: import_zod5.z.string() }).optional(),
     // ObjectId is often string in filters
-    namespace: z5.object({ EQ: z5.string() }).optional(),
-    description: z5.object({ EQ: z5.string() }).optional(),
-    automatedClassifications: z5.object({ EQ: z5.boolean() }).optional(),
-    complete_entities: z5.object({ EQ: z5.boolean() }).optional(),
-    weight: z5.object({ EQ: z5.number().int() }).optional()
+    namespace: import_zod5.z.object({ EQ: import_zod5.z.string() }).optional(),
+    description: import_zod5.z.object({ EQ: import_zod5.z.string() }).optional(),
+    automatedClassifications: import_zod5.z.object({ EQ: import_zod5.z.boolean() }).optional(),
+    complete_entities: import_zod5.z.object({ EQ: import_zod5.z.boolean() }).optional(),
+    weight: import_zod5.z.object({ EQ: import_zod5.z.number().int() }).optional()
     // dummy_fields and field_list are complex types; filtering might need specific input objects
     // For now, keeping it simple. Add more complex filter options if needed.
   }).optional(),
   pagination: paginationSchema,
-  sort: z5.object({
-    _id: z5.enum(["ASC", "DESC"]).optional(),
-    namespace: z5.enum(["ASC", "DESC"]).optional(),
-    description: z5.enum(["ASC", "DESC"]).optional(),
-    automatedClassifications: z5.enum(["ASC", "DESC"]).optional(),
-    complete_entities: z5.enum(["ASC", "DESC"]).optional(),
-    weight: z5.enum(["ASC", "DESC"]).optional()
+  sort: import_zod5.z.object({
+    _id: import_zod5.z.enum(["ASC", "DESC"]).optional(),
+    namespace: import_zod5.z.enum(["ASC", "DESC"]).optional(),
+    description: import_zod5.z.enum(["ASC", "DESC"]).optional(),
+    automatedClassifications: import_zod5.z.enum(["ASC", "DESC"]).optional(),
+    complete_entities: import_zod5.z.enum(["ASC", "DESC"]).optional(),
+    weight: import_zod5.z.enum(["ASC", "DESC"]).optional()
   }).optional(),
-  fields: z5.array(z5.string()).optional().default(["_id", "namespace", "description", "automatedClassifications", "complete_entities", "weight"]),
-  format: z5.enum(["json", "csv"]).optional().default("json")
+  fields: import_zod5.z.array(import_zod5.z.string()).optional().default(["_id", "namespace", "description", "automatedClassifications", "complete_entities", "weight"]),
+  format: import_zod5.z.enum(["json", "csv"]).optional().default("json")
 };
-var getTaxonomiesSchema = z5.object(getTaxonomiesShape);
+var getTaxonomiesSchema = import_zod5.z.object(getTaxonomiesShape);
 async function getTaxonomies(params) {
   const { format } = params;
   try {
@@ -365,8 +388,8 @@ async function getSchema() {
 }
 
 // index.ts
-dotenv2.config();
-var server = new McpServer({
+import_dotenv2.default.config();
+var server = new import_mcp.McpServer({
   name: "AIID GraphQL MCP Server",
   version: "1.0.0",
   description: "Expose AI Incident Database GraphQL API via MCP",
@@ -404,7 +427,7 @@ server.tool(
   getSchema
 );
 async function main() {
-  const transport = new StdioServerTransport();
+  const transport = new import_stdio.StdioServerTransport();
   try {
     await server.connect(transport);
     debug("AIID MCP Server connected via stdio");
@@ -423,4 +446,4 @@ process.on("uncaughtException", (error) => {
   debug("Uncaught Exception: %o", error);
   process.exit(1);
 });
-//# sourceMappingURL=index.js.map
+//# sourceMappingURL=index.cjs.map

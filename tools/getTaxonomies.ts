@@ -6,7 +6,7 @@ import {
   createMcpSuccessResponse,
   createMcpErrorResponse,
   paginationSchema
-} from "./utils.js";
+} from "./utils";
 
 export const getTaxonomiesShape: ZodRawShape = {
   filter: z.object({
